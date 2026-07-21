@@ -1,0 +1,50 @@
+# /etc/systemd/system/orchestrator-worker.service
+# Identical on both nodes — the Worker is always local and always on,
+# never touched by keepalived.
+#
+# [Unit]
+# Description=Orchestrator Worker
+# After=docker.service network-online.target
+# Requires=docker.service
+#
+# [Service]
+# Environment=NODE_ID=master-1          # or slave-1 on the other machine
+# Environment=PORT=6000                 # or 6001 on the other machine
+# WorkingDirectory=/opt/orchestrator/worker
+# ExecStart=/usr/bin/python3 api.py
+# Restart=always
+# User=orchestrator
+#
+# [Install]
+# WantedBy=multi-user.target
+
+
+# /etc/systemd/system/orchestrator-scheduler.service
+# Also identical on both nodes and always on. The Scheduler holds no
+# persistent state (only in-memory node info), so unlike the Manager it
+# doesn't need to be tied to keepalived's MASTER/BACKUP transitions —
+# it's safe to run on both machines simultaneously. Whichever node
+# currently holds the VIP is the one actually reached at VIP:7000.
+#
+# [Unit]
+# Description=Orchestrator Scheduler
+# After=network-online.target
+#
+# [Service]
+# Environment=MASTER_URL=http://192.168.1.10:6000   # master's REAL ip, not the VIP
+# Environment=SLAVE_URL=http://192.168.1.11:6001     # slave's REAL ip
+# WorkingDirectory=/opt/orchestrator/scheduler
+# ExecStart=/usr/bin/python3 api.py
+# Restart=always
+# User=orchestrator
+#
+# [Install]
+# WantedBy=multi-user.target
+
+# Enable both with:
+#   systemctl daemon-reload
+#   systemctl enable --now orchestrator-worker orchestrator-scheduler
+#
+# The Manager is deliberately NOT a systemd service here — keepalived's
+# notify_master.sh/notify_backup.sh start and stop it directly, since it
+# must run on exactly one node at a time.
