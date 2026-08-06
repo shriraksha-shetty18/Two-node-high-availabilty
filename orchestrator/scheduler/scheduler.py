@@ -163,3 +163,11 @@ class Scheduler:
         if not node:
             raise SchedulerError(f"unknown node '{node_id}'")
         return node
+        
+    def restart(self, node_id: str, container_id: str) -> None:
+        node = self._require_node(node_id)
+        r = requests.post(
+            f"{node.base_url}/containers/{container_id}/restart",
+            timeout=REQUEST_TIMEOUT
+        )
+        r.raise_for_status()

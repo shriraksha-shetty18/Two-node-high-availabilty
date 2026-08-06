@@ -45,6 +45,7 @@ class HealthMonitor:
         self.poll_interval = poll_interval
         self._alive: dict[str, bool] = {}  # node_id -> was_alive_on_last_check
         self._stop_event = threading.Event()
+        
         self._thread = threading.Thread(target=self._run, daemon=True, name="health-monitor")
 
     def start(self):
@@ -53,7 +54,7 @@ class HealthMonitor:
 
     def stop(self):
         self._stop_event.set()
-
+        
     def _run(self):
         while not self._stop_event.is_set():
             try:
@@ -134,6 +135,30 @@ class Manager:
         db.upsert_workload(name, workload["spec"], node_id=workload["node_id"],
                             container_id=workload["container_id"], status="stopped", path=self.db_path)
         logger.info(f"stopped '{name}'")
+        
+    def restart(self, name: str) -> None:
+        workload = self._require(name)
+
+        if workload["node_id"] and workload["container_id"]:
+            try:
+                r = requests.post(
+                    f"{self.scheduler_url}/containers/{workload['node_id']}/{workload['container_id']}/restart",
+                    timeout=REQUEST_TIMEOUT,
+                )
+                r.raise_for_status()
+            except requests.RequestException as e:
+                raise ManagerError(f"failed to restart '{name}': {e}")
+
+        db.upsert_workload(
+            name,
+            workload["spec"],
+            node_id=workload["node_id"],
+            container_id=workload["container_id"],
+            status="running",
+            path=self.db_path,
+        )
+
+        logger.info(f"restarted '{name}'")
 
     def remove(self, name: str) -> None:
         workload = self._require(name)

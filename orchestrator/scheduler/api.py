@@ -15,8 +15,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from scheduler import Scheduler, NodeInfo, WorkloadSpec, SchedulerError
 
-MASTER_URL = os.environ.get("MASTER_URL", "http://localhost:6000")
-SLAVE_URL = os.environ.get("SLAVE_URL", "http://localhost:6001")
+MASTER_URL = os.environ.get("MASTER_URL", "http://localhost:6001") 
+SLAVE_URL = os.environ.get("SLAVE_URL","http://localhost:6001")
 PORT = int(os.environ.get("SCHEDULER_PORT", 7000))
 
 app = Flask(__name__)
@@ -93,6 +93,14 @@ def remove(node_id, container_id):
 def status(node_id, container_id):
     try:
         return jsonify(scheduler.status(node_id, container_id))
+    except SchedulerError as e:
+        return error_response(e, 500)
+    
+@app.route("/containers/<node_id>/<container_id>/restart", methods=["POST"])
+def restart(node_id, container_id):
+    try:
+        scheduler.restart(node_id, container_id)
+        return jsonify({"status": "restarted"})
     except SchedulerError as e:
         return error_response(e, 500)
 

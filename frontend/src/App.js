@@ -337,10 +337,8 @@ function App() {
       );
       setWorkloads(workloadsRes.data);
 
-      const runningOnMaster = workloadsRes.data.some(
-        w => w.node_id === 'master-1' && w.status === 'running'
-      );
-      setVipHolder(runningOnMaster ? 'master-1' : 'slave-1');
+      const vipRes = await axios.get(`${KEEPALIVED_URL}/vip`);
+      setVipHolder(vipRes.data.owner);
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (err) {
       console.error('Failed to fetch data:', err);
@@ -399,7 +397,7 @@ const fetchLogs = async () => {
 const handleRestart = async (name) => {
   try {
     await axios.post(
-      `${MANAGER_URL}/manager/workloads/${name}/start`
+      `${MANAGER_URL}/manager/workloads/${name}/restart`
     );
     await fetchData();
   } catch (err) {
