@@ -15,8 +15,8 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 from scheduler import Scheduler, NodeInfo, WorkloadSpec, SchedulerError
 
-MASTER_URL = os.environ.get("MASTER_URL", "http://localhost:6001") 
-SLAVE_URL = os.environ.get("SLAVE_URL","http://localhost:6001")
+MASTER_URL = os.environ.get("MASTER_URL", "http://192.168.195.3:6000")
+SLAVE_URL = os.environ.get("SLAVE_URL", "http://192.168.195.4:6001")
 PORT = int(os.environ.get("SCHEDULER_PORT", 7000))
 
 app = Flask(__name__)

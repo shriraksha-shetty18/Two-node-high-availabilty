@@ -46,6 +46,7 @@ const styles = {
     border: '2px solid #0f3460',
     marginBottom: '20px',
   },
+
   nodeGrid: {
     display: 'flex',
     gap: '20px',
@@ -143,9 +144,19 @@ const styles = {
 };
 
 // Dashboard Tab
-function Dashboard({ nodes, vipHolder, logs }) {
+function Dashboard({ nodes, logs }) {
   return (
     <div>
+    
+      <div style={styles.card}>
+        <h3 style={styles.sectionTitle}>🌐 Virtual IP</h3>
+        <p style={{ fontSize: '20px', fontWeight: 'bold' }}>
+          192.168.195.100
+        </p>
+        <p style={{ color: '#888', fontSize: '13px' }}>
+          Client access endpoint
+        </p>
+      </div>
       <div style={styles.nodeGrid}>
         {Object.entries(nodes).map(([id, info]) => (
           <div key={id} style={styles.nodeCard(info.alive ? 'alive' : 'down')}>
@@ -159,9 +170,7 @@ function Dashboard({ nodes, vipHolder, logs }) {
                 Load: {info.load} / {info.capacity}
               </p>
             )}
-            {id === vipHolder && (
-              <div style={styles.vipBadge}>⭐ HOLDS VIRTUAL IP</div>
-            )}
+             
           </div>
         ))}
       </div>
@@ -337,8 +346,7 @@ function App() {
       );
       setWorkloads(workloadsRes.data);
 
-      const vipRes = await axios.get(`${KEEPALIVED_URL}/vip`);
-      setVipHolder(vipRes.data.owner);
+       
       setLastUpdated(new Date().toLocaleTimeString());
     } catch (err) {
       console.error('Failed to fetch data:', err);
@@ -433,7 +441,7 @@ const handleRestart = async (name) => {
       {tab === 'dashboard' && (
         <Dashboard
           nodes={nodes}
-          vipHolder={vipHolder}
+           
           logs={logs}
         />
       )}
