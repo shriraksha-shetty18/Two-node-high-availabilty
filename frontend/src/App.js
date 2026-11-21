@@ -205,11 +205,11 @@ function Workloads({ workloads, onDeploy, onStop, onRemove,onRestart }) {
     }
     setDeploying(true);
     setError('');
-    const spec = { image };
+    const spec = { image: image.trim() };
     if (port && hostPort) {
       spec.ports = { [`${port}/tcp`]: parseInt(hostPort) };
     }
-    await onDeploy(name, spec);
+    await onDeploy(name.trim(), spec);
     setName('');
     setImage('');
     setPort('');

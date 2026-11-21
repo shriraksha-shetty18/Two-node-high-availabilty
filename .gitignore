@@ -1,0 +1,32 @@
+# Environment files and secrets
+.env
+.env.*
+!.env.example
+keepalived/ha.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# Databases and backups
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.bak
+*.backup*
+
+# Virtual environments
+venv/
+.venv/
+
+# Node dependencies and builds
+node_modules/
+frontend/build/
+
+# OS files
+.DS_Store
+Thumbs.db

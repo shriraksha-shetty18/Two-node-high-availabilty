@@ -47,23 +47,40 @@ def _now() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def upsert_workload(name: str, spec: dict, node_id: str = None, container_id: str = None,
-                     status: str = "pending", path: str = DB_PATH):
+def upsert_workload(name: str, spec: dict, node_id: str = None,
+                     container_id: str = None, status: str = "pending",
+                     path: str = DB_PATH):
     now = _now()
     with _connect(path) as conn:
-        existing = conn.execute("SELECT name FROM workloads WHERE name = ?", (name,)).fetchone()
+        existing = conn.execute(
+            "SELECT name FROM workloads WHERE name = ?", (name,)
+        ).fetchone()
+
         if existing:
+            current = conn.execute(
+                "SELECT node_id, container_id FROM workloads WHERE name = ?",
+                (name,),
+            ).fetchone()
+
+            if node_id is None:
+                node_id = current["node_id"]
+            if container_id is None:
+                container_id = current["container_id"]
+
             conn.execute(
-                """UPDATE workloads SET spec_json=?, node_id=?, container_id=?, status=?, updated_at=?
+                """UPDATE workloads
+                   SET spec_json=?, node_id=?, container_id=?, status=?, updated_at=?
                    WHERE name=?""",
                 (json.dumps(spec), node_id, container_id, status, now, name),
             )
         else:
             conn.execute(
-                """INSERT INTO workloads (name, spec_json, node_id, container_id, status, created_at, updated_at)
+                """INSERT INTO workloads
+                   (name, spec_json, node_id, container_id, status, created_at, updated_at)
                    VALUES (?, ?, ?, ?, ?, ?, ?)""",
                 (name, json.dumps(spec), node_id, container_id, status, now, now),
             )
+
 
 
 def get_workload(name: str, path: str = DB_PATH) -> dict | None:

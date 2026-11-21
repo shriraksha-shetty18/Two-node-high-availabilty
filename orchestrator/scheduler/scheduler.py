@@ -135,8 +135,8 @@ class Scheduler:
             result = r.json()
             return {"node_id": node.node_id, "container_id": result["container_id"]}
         except requests.RequestException as e:
-            raise SchedulerError(f"failed to place workload on '{node.node_id}': {e}")
-
+            detail = getattr(getattr(e, "response", None), "text", "")
+            raise SchedulerError(f"failed to place workload on '{node.node_id}': {e} {detail}")
     # ---------- operations that need to know which node a container is on ----------
     # (In a full system the Manager tracks node placement per container; these
     # helpers assume the caller already knows which node, mirroring how the
